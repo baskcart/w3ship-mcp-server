@@ -1,6 +1,6 @@
 {
   "name": "w3ship-mcp-server",
-  "version": "1.6.0",
+  "version": "1.7.0",
   "description": "W3Ship Commerce MCP Server — AI-powered shopping cart, orders, shipment tracking & VR booking via Model Context Protocol. Passwordless commerce using cryptographic identity (SLH-DSA / ECDSA).",
   "type": "module",
   "bin": {
@@ -40,16 +40,17 @@
   "homepage": "https://w3ship.com",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/baskcart/w3ship.git",
-    "directory": "mcp-server"
+    "url": "git+https://github.com/baskcart/w3ship-mcp-server.git"
   },
   "bugs": {
-    "url": "https://github.com/baskcart/w3ship/issues"
+    "url": "https://github.com/baskcart/w3ship-mcp-server/issues"
   },
   "author": "W3Ship Team <hello@w3ship.com>",
   "license": "MIT",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.26.0",
+    "@noble/curves": "^2.0.1",
+    "@noble/post-quantum": "^0.5.4",
     "ioredis": "^5.9.2",
     "zod": "^4.3.6"
   },

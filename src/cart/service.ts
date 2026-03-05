@@ -24,75 +24,92 @@ export interface Listing {
 }
 
 class ValkeyService {
-    private client: Redis;
+    private _client: Redis | null = null;
+    private _errorLogged = false;
 
-    constructor() {
-        const options: any = {
-            host: VALKEY_HOST,
-            port: VALKEY_PORT,
-        };
-        if (VALKEY_PASSWORD) options.password = VALKEY_PASSWORD;
+    private getClient(): Redis {
+        if (!this._client) {
+            const options: any = {
+                host: VALKEY_HOST,
+                port: VALKEY_PORT,
+                maxRetriesPerRequest: 3,
+                retryStrategy: (times: number) => {
+                    if (times > 3) return null; // stop retrying
+                    return Math.min(times * 200, 2000);
+                },
+            };
+            if (VALKEY_PASSWORD) options.password = VALKEY_PASSWORD;
 
-        this.client = new Redis(options);
+            this._client = new Redis(options);
 
-        this.client.on('error', (err: Error) => console.error('Valkey Client Error', err));
+            this._client.on('error', (err: Error) => {
+                if (!this._errorLogged) {
+                    console.error('Valkey Client Error:', err.message);
+                    this._errorLogged = true;
+                }
+            });
+        }
+        return this._client;
     }
 
     // ── Cart Methods ──
 
     async getCart(cartId: string): Promise<ShoppingCart | null> {
-        const data = await this.client.get(`cart:${cartId}`);
+        const data = await this.getClient().get(`cart:${cartId}`);
         if (!data) return null;
         return JSON.parse(data);
     }
 
     async saveCart(cart: ShoppingCart): Promise<void> {
-        await this.client.set(`cart:${cart.id}`, JSON.stringify(cart));
+        await this.getClient().set(`cart:${cart.id}`, JSON.stringify(cart));
     }
 
     async deleteCart(cartId: string): Promise<void> {
-        await this.client.del(`cart:${cartId}`);
+        await this.getClient().del(`cart:${cartId}`);
     }
 
     // ── Listing Methods ──
 
     async saveListing(listing: Listing): Promise<void> {
-        await this.client.set(`listing:${listing.id}`, JSON.stringify(listing));
+        const client = this.getClient();
+        await client.set(`listing:${listing.id}`, JSON.stringify(listing));
         // Index in active listings sorted set (score = timestamp for ordering)
         if (listing.status === 'active') {
-            await this.client.zadd('listings:active', Date.now(), listing.id);
+            await client.zadd('listings:active', Date.now(), listing.id);
             // Index by category
             if (listing.category) {
-                await this.client.sadd(`listings:cat:${listing.category.toLowerCase()}`, listing.id);
+                await client.sadd(`listings:cat:${listing.category.toLowerCase()}`, listing.id);
             }
         }
     }
 
     async getListing(listingId: string): Promise<Listing | null> {
-        const data = await this.client.get(`listing:${listingId}`);
+        const data = await this.getClient().get(`listing:${listingId}`);
         if (!data) return null;
         return JSON.parse(data);
     }
 
     async deleteListing(listingId: string): Promise<void> {
+        const client = this.getClient();
         const listing = await this.getListing(listingId);
-        await this.client.del(`listing:${listingId}`);
-        await this.client.zrem('listings:active', listingId);
+        await client.del(`listing:${listingId}`);
+        await client.zrem('listings:active', listingId);
         if (listing?.category) {
-            await this.client.srem(`listings:cat:${listing.category.toLowerCase()}`, listingId);
+            await client.srem(`listings:cat:${listing.category.toLowerCase()}`, listingId);
         }
     }
 
     async searchListings(opts: { category?: string; keyword?: string; limit?: number }): Promise<Listing[]> {
+        const client = this.getClient();
         const limit = opts.limit || 20;
         let listingIds: string[];
 
         if (opts.category) {
             // Get IDs from category index
-            listingIds = await this.client.smembers(`listings:cat:${opts.category.toLowerCase()}`);
+            listingIds = await client.smembers(`listings:cat:${opts.category.toLowerCase()}`);
         } else {
             // Get most recent active listings
-            listingIds = await this.client.zrevrange('listings:active', 0, limit - 1);
+            listingIds = await client.zrevrange('listings:active', 0, limit - 1);
         }
 
         const listings: Listing[] = [];

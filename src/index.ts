@@ -1301,6 +1301,50 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
  * Main entry point.
  */
 async function main() {
+    const args = process.argv.slice(2);
+
+    // --list-tools: Print available tools and exit (no Redis needed)
+    if (args.includes('--list-tools')) {
+        const toolNames = [
+            'ship_address', 'create_cart', 'get_cart', 'add_item', 'delete_cart',
+            'create_order', 'get_order', 'track_shipment',
+            'get_available_slots', 'hold_slot', 'list_bookings',
+            'generate_demo_key', 'get_identity',
+            'get_swap_quote', 'check_token_approval',
+            'create_listing', 'search_listings', 'get_listing', 'remove_listing',
+            'confirm_payment', 'add_tracking', 'claim_promo',
+        ];
+        console.log(`\n📋 W3Ship Commerce MCP Server — Available Tools\n`);
+        console.log('============================================================\n');
+        for (const t of toolNames) {
+            console.log(`  🟢 ${t}`);
+        }
+        console.log('\n============================================================\n');
+        console.log(`  Total: ${toolNames.length} tools\n`);
+        process.exit(0);
+    }
+
+    // --help
+    if (args.includes('--help') || args.includes('-h')) {
+        console.log(`
+W3Ship Commerce MCP Server v1.6.0
+
+Usage:
+  w3ship-mcp-server              Start MCP server (stdio transport)
+  w3ship-mcp-server --list-tools List all available tools and exit
+  w3ship-mcp-server --help       Show this help message
+
+Environment variables:
+  W3SHIP_PUBLIC_KEY   Pre-configured public key (hex)
+  W3SHIP_API_URL      API base URL (default: https://w3ship.com)
+  UNISWAP_API_KEY     Uniswap Trading API key
+  VALKEY_HOST          Redis/Valkey host (default: localhost)
+  VALKEY_PORT          Redis/Valkey port (default: 6379)
+  VALKEY_PASSWORD      Redis/Valkey password (optional)
+`);
+        process.exit(0);
+    }
+
     const transport = new StdioServerTransport();
     await server.connect(transport);
     console.error("W3Ship Commerce MCP server running on stdio");
@@ -1310,3 +1354,4 @@ main().catch((error) => {
     console.error("Server error:", error);
     process.exit(1);
 });
+
