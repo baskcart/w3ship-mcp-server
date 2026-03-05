@@ -1,0 +1,61 @@
+{
+  "name": "w3ship-mcp-server",
+  "version": "1.6.0",
+  "description": "W3Ship Commerce MCP Server — AI-powered shopping cart, orders, shipment tracking & VR booking via Model Context Protocol. Passwordless commerce using cryptographic identity (SLH-DSA / ECDSA).",
+  "type": "module",
+  "bin": {
+    "w3ship-mcp-server": "dist/index.js"
+  },
+  "files": [
+    "dist",
+    "LICENSE",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "prepublishOnly": "npm run build",
+    "start": "node dist/index.js",
+    "dev": "tsx src/index.ts"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "w3ship",
+    "commerce",
+    "shopping-cart",
+    "ai-agent",
+    "agentic-commerce",
+    "tmf663",
+    "tmf622",
+    "tmf621",
+    "order",
+    "shipment",
+    "identity",
+    "slh-dsa",
+    "ecdsa",
+    "cryptographic-identity",
+    "passwordless",
+    "session-booking"
+  ],
+  "homepage": "https://w3ship.com",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/baskcart/w3ship.git",
+    "directory": "mcp-server"
+  },
+  "bugs": {
+    "url": "https://github.com/baskcart/w3ship/issues"
+  },
+  "author": "W3Ship Team <hello@w3ship.com>",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.26.0",
+    "ioredis": "^5.9.2",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@types/node": "^25.2.2",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3"
+  }
+}
