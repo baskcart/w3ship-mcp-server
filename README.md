@@ -324,3 +324,8 @@ Claude: [calls claim_promo with fulfillmentChoice: pickup]
 ## 📄 License
 
 MIT — see [LICENSE](./LICENSE)
+
+## Hosted deployment
+
+A hosted deployment is available on [Fronteir AI](https://fronteir.ai/mcp/w3ship-w3ship-mcp-server).
+
